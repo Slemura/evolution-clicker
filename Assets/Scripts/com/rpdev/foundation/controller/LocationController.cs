@@ -78,12 +78,18 @@ namespace com.rpdev.foundation.controller {
 			                .Subscribe(_ => {
 				                 
 				                 if (current_drag_creature == null) {
+				                 
+					                 CrateView possibleCrate = location_model.GetIntersectInputPositionUnit(input_controller.InputWorldPosition.Value) as CrateView;
 					                 
-									ICreatureView unit = location_model.GetIntersectInputPositionCreature(input_controller.InputWorldPosition.Value);
-									if (unit != null) {
-										 current_drag_creature = unit;
-										current_drag_creature.SetDrag(true);
-									}
+					                 if (possibleCrate == null) {
+						                 
+						                 ICreatureView unit = location_model.GetIntersectInputPositionCreature(input_controller.InputWorldPosition.Value);
+						                 
+						                 if (unit != null) {
+							                 current_drag_creature = unit;
+							                 current_drag_creature.SetDrag(true);
+						                 }    
+					                 }
 				                 }
 			                 })
 			                .AddTo(input_stream);
