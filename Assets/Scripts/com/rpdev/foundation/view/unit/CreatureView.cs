@@ -46,11 +46,15 @@ namespace com.rpdev.foundation.view.unit {
 	    public override void Interact() {
 		    
 		    if (start_drag_pos == transform.position) {
-			    if (Level == 1) {
-				    location_controller.SpawnCoin(settings.base_coin_value, transform.position);
-			    } else {
-				    location_controller.SpawnCoin(settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
-			    }
+				DropCoin();   
+		    }
+	    }
+
+	    protected void DropCoin() {
+		    if (Level == 1) {
+			    location_controller.SpawnCoin(settings.base_coin_value, transform.position);
+		    } else {
+			    location_controller.SpawnCoin(settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
 		    }
 	    }
 
@@ -106,7 +110,7 @@ namespace com.rpdev.foundation.view.unit {
 		    animation_stream = Observable.Timer(TimeSpan.FromSeconds(1f))
 		                                 .Repeat()
 		                                 .Subscribe(_ => {
-			                                  Interact();
+			                                  DropCoin();
 			                                  CreateRandomAnimation();
 		                                  });
 		    
