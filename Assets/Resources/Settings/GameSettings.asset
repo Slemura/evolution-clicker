@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30c464300a982974eb49170985ab2966, type: 3}
+  m_Name: GameSettings
+  m_EditorClassIdentifier: 
+  location_settings:
+    crate_view: {fileID: 2782841464986835428, guid: eb8c8a687678fd04c8e5aa90e341f483,
+      type: 3}
+    creature_view: {fileID: 4596215250147661690, guid: cfc01b23a09a8244db0b6958ba6f476d,
+      type: 3}
+    coin_view: {fileID: 8853272162640002166, guid: a11ae96900f90ab45b158fe7e3a3c4f8,
+      type: 3}
+    max_creatures: 20
+    crate_creation_interval: 5
+  creatures_settings:
+    start_scale: 0.8
+    scale_from_level: 0.2
+    move_speed_range: 0.3
