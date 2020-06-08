@@ -60,16 +60,12 @@ namespace com.rpdev.foundation.model {
 
 	    }
 	    
-	    public ICoinView GetIntersectInputPositionCoin(Vector3 input_world_position) {
+	    public ICoinView[] GetIntersectInputPositionCoin(Vector3 input_world_position) {
 		    
-		    List<ICoinView> intersects = all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
+		    return all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
 		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
 		                                                                     input_world_position.y > unit.Bounds.center.y - unit.Bounds.extents.y &&
-		                                                                     input_world_position.y < unit.Bounds.center.y + unit.Bounds.extents.y).ToList();
-		    
-		    intersects?.Sort();
-
-		    return intersects.Count > 0 ? intersects[0] : null;
+		                                                                     input_world_position.y < unit.Bounds.center.y + unit.Bounds.extents.y).ToArray();
 	    }
 	    
 	    
