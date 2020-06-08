@@ -57,10 +57,6 @@ namespace com.rpdev.foundation.view.unit {
 			                    1f, 1, 0.2f)
 			         .SetEase(Ease.InCirc)
 			         .OnComplete(() => CreateAnimationStream(false));
-
-			Observable.Timer(TimeSpan.FromSeconds(3))
-			          .Subscribe(_ => Interact())
-			          .AddTo(this);
 		}
 	}
 }

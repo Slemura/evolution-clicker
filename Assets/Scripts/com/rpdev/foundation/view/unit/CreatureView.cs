@@ -19,11 +19,14 @@ namespace com.rpdev.foundation.view.unit {
 	public class CreatureView : UnitView, ICreatureView {
 		
 		protected Vector3 next_jump_pos;
+		protected Vector3 start_drag_pos;
+		
 		protected int current_level = 1;
 		protected Bounds camera_bounds;
 		protected float CurrentScale => settings.start_scale + current_level * settings.scale_from_level;
 		protected Settings settings;
 		protected LocationController location_controller;
+
 		
 		public int Level => current_level;
 
@@ -41,7 +44,9 @@ namespace com.rpdev.foundation.view.unit {
 		}
 		
 	    public override void Interact() {
-		    location_controller.SpawnCoin(Level == 1 ? 1 : (Level - 1) * 2, transform.position);
+		    if (start_drag_pos == transform.position) {
+			    location_controller.SpawnCoin(Level == 1 ? 1 : (Level - 1) * 2, transform.position);    
+		    }
 	    }
 
 	    public void SetLevel(int level) {
@@ -68,6 +73,9 @@ namespace com.rpdev.foundation.view.unit {
 	    }
 
 	    public void SetDrag(bool is_drag) {
+		    
+		    start_drag_pos = transform.position;
+		    
 		    StopAnimation();
 		    
 		    if (is_drag) {
