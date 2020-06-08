@@ -3,6 +3,7 @@ using com.mikecann.scripts;
 using com.rpdev.foundation.model;
 using com.rpdev.foundation.view.unit;
 using UniRx;
+using UniTools;
 using UnityEngine;
 using Zenject;
 
@@ -93,11 +94,16 @@ namespace com.rpdev.foundation.controller {
 			                .Subscribe(pos => {
 				                 
 				                 if (current_drag_creature == null) {
-					                 ICoinView coinView = location_model.GetIntersectInputPositionCoin(pos);
-				                 
-					                 if (coinView != null && !coinView.IsCollected) {
-						                 coinView.Interact();    
-					                 }    
+					                 ICoinView[] coinView = location_model.GetIntersectInputPositionCoin(pos);
+
+					                 if (coinView.Length > 0) {
+						                 coinView.ForEach(coin => {
+							                 if (!coin.IsCollected) {
+								                 coin.Interact();
+							                 }
+						                 });
+					                 }
+					                 
 				                 } else {
 					                 current_drag_creature.SetPosition(pos.VectorBoundInBound(current_drag_creature.Bounds, camera_bounds).SetZ(current_drag_creature.Position.z));    
 				                 }
