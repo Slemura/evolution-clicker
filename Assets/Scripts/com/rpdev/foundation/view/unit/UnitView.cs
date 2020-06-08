@@ -44,7 +44,7 @@ namespace com.rpdev.foundation.view.unit {
 		public Vector2 ScreenPosition => Camera.main.WorldToScreenPoint(transform.position);
 
 		protected void Awake() {
-			SpriteRenderer.sortingOrder = Random.Range(0, 100);
+			SpriteRenderer.sortingOrder = Random.Range(0, 20);
 			started_scale = transform.localScale;
 		}
 		

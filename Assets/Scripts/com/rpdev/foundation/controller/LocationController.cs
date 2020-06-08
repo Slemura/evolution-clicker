@@ -61,6 +61,8 @@ namespace com.rpdev.foundation.controller {
 								                 second_creature = collideCreature
 							                 });
 						                 }
+					                 } else {
+						                 current_drag_creature.Interact();
 					                 }
 					                 
 					                 current_drag_creature.SetDrag(false);

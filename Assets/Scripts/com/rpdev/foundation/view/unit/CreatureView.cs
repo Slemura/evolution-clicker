@@ -19,11 +19,14 @@ namespace com.rpdev.foundation.view.unit {
 	public class CreatureView : UnitView, ICreatureView {
 		
 		protected Vector3 next_jump_pos;
+		protected Vector3 start_drag_pos;
+		
 		protected int current_level = 1;
 		protected Bounds camera_bounds;
 		protected float CurrentScale => settings.start_scale + current_level * settings.scale_from_level;
 		protected Settings settings;
 		protected LocationController location_controller;
+
 		
 		public int Level => current_level;
 
@@ -41,7 +44,18 @@ namespace com.rpdev.foundation.view.unit {
 		}
 		
 	    public override void Interact() {
-		    location_controller.SpawnCoin(Level == 1 ? 1 : (Level - 1) * 2, transform.position);
+		    
+		    if (start_drag_pos == transform.position) {
+				DropCoin();   
+		    }
+	    }
+
+	    protected void DropCoin() {
+		    if (Level == 1) {
+			    location_controller.SpawnCoin(settings.base_coin_value, transform.position);
+		    } else {
+			    location_controller.SpawnCoin(settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
+		    }
 	    }
 
 	    public void SetLevel(int level) {
@@ -68,6 +82,9 @@ namespace com.rpdev.foundation.view.unit {
 	    }
 
 	    public void SetDrag(bool is_drag) {
+		    
+		    start_drag_pos = transform.position;
+		    
 		    StopAnimation();
 		    
 		    if (is_drag) {
@@ -93,7 +110,7 @@ namespace com.rpdev.foundation.view.unit {
 		    animation_stream = Observable.Timer(TimeSpan.FromSeconds(1f))
 		                                 .Repeat()
 		                                 .Subscribe(_ => {
-			                                  Interact();
+			                                  DropCoin();
 			                                  CreateRandomAnimation();
 		                                  });
 		    
@@ -144,6 +161,7 @@ namespace com.rpdev.foundation.view.unit {
 
 	    [Serializable]
 	    public struct Settings {
+		    public int base_coin_value;
 		    public float start_scale;
 		    public float scale_from_level;
 		    public float move_speed_range;
