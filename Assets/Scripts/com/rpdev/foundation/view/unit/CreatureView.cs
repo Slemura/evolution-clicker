@@ -44,8 +44,13 @@ namespace com.rpdev.foundation.view.unit {
 		}
 		
 	    public override void Interact() {
+		    
 		    if (start_drag_pos == transform.position) {
-			    location_controller.SpawnCoin(Level == 1 ? 1 : (Level - 1) * 2, transform.position);    
+			    if (Level == 1) {
+				    location_controller.SpawnCoin(settings.base_coin_value, transform.position);
+			    } else {
+				    location_controller.SpawnCoin(settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
+			    }
 		    }
 	    }
 
@@ -152,6 +157,7 @@ namespace com.rpdev.foundation.view.unit {
 
 	    [Serializable]
 	    public struct Settings {
+		    public int base_coin_value;
 		    public float start_scale;
 		    public float scale_from_level;
 		    public float move_speed_range;

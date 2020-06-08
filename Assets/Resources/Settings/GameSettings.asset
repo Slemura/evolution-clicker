@@ -22,6 +22,7 @@ MonoBehaviour:
     max_creatures: 20
     crate_creation_interval: 5
   creatures_settings:
+    base_coin_value: 1
     start_scale: 0.8
     scale_from_level: 0.2
     move_speed_range: 0.3
