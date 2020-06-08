@@ -78,12 +78,12 @@ namespace com.rpdev.foundation.controller {
 			                .Subscribe(_ => {
 				                 
 				                 if (current_drag_creature == null) {
-					                 IUnitView unit = location_model.GetIntersectInputPositionUnit(input_controller.InputWorldPosition.Value);
-					                 if (unit is ICreatureView view) {
-						                 current_drag_creature = view;
-						                 current_drag_creature.SetDrag(true);
-					                 }
 					                 
+									ICreatureView unit = location_model.GetIntersectInputPositionCreature(input_controller.InputWorldPosition.Value);
+									if (unit != null) {
+										 current_drag_creature = unit;
+										current_drag_creature.SetDrag(true);
+									}
 				                 }
 			                 })
 			                .AddTo(input_stream);

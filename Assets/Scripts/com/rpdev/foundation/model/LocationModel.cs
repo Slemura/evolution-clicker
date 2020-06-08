@@ -60,26 +60,39 @@ namespace com.rpdev.foundation.model {
 
 	    }
 	    
+	    public ICreatureView GetIntersectInputPositionCreature(Vector3 input_world_position) {
+		    
+		    List<ICreatureView> intersects = all_creatures_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
+		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
+		                                                                     input_world_position.y >= unit.Bounds.center.y - unit.Bounds.extents.y &&
+		                                                                     input_world_position.y <= unit.Bounds.center.y + unit.Bounds.extents.y)
+		                                                              .ToList();
+		    
+		    intersects?.Sort();
+
+		    return intersects.Count > 0 ? intersects[0] : null;
+	    }
+	    
 	    public ICoinView[] GetIntersectInputPositionCoin(Vector3 input_world_position) {
 		    
-		    return all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
-		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
-		                                                                     input_world_position.y > unit.Bounds.center.y - unit.Bounds.extents.y &&
-		                                                                     input_world_position.y < unit.Bounds.center.y + unit.Bounds.extents.y).ToArray();
+		    return all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.size.x &&
+		                                              input_world_position.x <= unit.Bounds.center.x + unit.Bounds.size.x &&
+		                                              input_world_position.y >= unit.Bounds.center.y - unit.Bounds.size.y &&
+		                                              input_world_position.y <= unit.Bounds.center.y + unit.Bounds.size.y).ToArray();
 	    }
+
 	    
 	    
 	    public IUnitView GetIntersectInputPositionUnit(Vector3 input_world_position) {
 		    
 		    List<IUnitView> intersects = all_units_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
 		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
-		                                                                     input_world_position.y > unit.Bounds.center.y - unit.Bounds.extents.y &&
-		                                                                     input_world_position.y < unit.Bounds.center.y + unit.Bounds.extents.y).ToList();
+		                                                                     input_world_position.y >= unit.Bounds.center.y - unit.Bounds.extents.y &&
+		                                                                     input_world_position.y <= unit.Bounds.center.y + unit.Bounds.extents.y).ToList();
 		    
 		    intersects?.Sort();
 
 		    return intersects.Count > 0 ? intersects[0] : null;
 	    }
-
 	}
 }
