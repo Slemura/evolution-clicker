@@ -7,12 +7,12 @@ namespace com.rpdev.foundation.model {
 
 	public class PlayerModel {
 		
-		protected readonly ReactiveProperty<int> coins = new ReactiveProperty<int>(0);
+		private readonly ReactiveProperty<int> _coins = new ReactiveProperty<int>(0);
 
-		public ReactiveProperty<int> Coins => coins;
+		public ReactiveProperty<int> Coins => _coins;
 		
 		public void AddCoins(int count) {
-			coins.Value += count;
+			_coins.Value += count;
 		}
 	}
 	
