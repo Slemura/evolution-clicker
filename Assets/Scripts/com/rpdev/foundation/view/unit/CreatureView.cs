@@ -17,60 +17,59 @@ namespace com.rpdev.foundation.view.unit {
 	}
 	
 	public class CreatureView : UnitView, ICreatureView {
-		
-		protected Vector3 next_jump_pos;
-		protected Vector3 start_drag_pos;
-		
-		protected int current_level = 1;
-		protected Bounds camera_bounds;
-		protected float CurrentScale => settings.start_scale + current_level * settings.scale_from_level;
-		protected Settings settings;
-		protected LocationController location_controller;
+
+		private int                _current_level = 1;
+		private Vector3            _next_jump_pos;
+		private Vector3            _start_drag_pos;
+		private Bounds             _camera_bounds;
+		private Settings           _settings;
+		private LocationController _location_controller;
 
 		
-		public int Level => current_level;
+		private float CurrentScale => _settings.start_scale + _current_level * _settings.scale_from_level;
+		public  int   Level        => _current_level;
 
 		[Inject]
 		protected void Construct(Settings           settings, 
 		                         LocationController location_controller) {
 		    
-			this.settings            = settings;
-			this.location_controller = location_controller;
+			this._settings            = settings;
+			this._location_controller = location_controller;
 		}
 	    
 		[Inject]
 		public override void Initialize() {
-			camera_bounds = Camera.main.OrthographicBounds();
+			_camera_bounds = Camera.main.OrthographicBounds();
 		}
 		
 	    public override void Interact() {
 		    
-		    if (start_drag_pos == transform.position) {
+		    if (_start_drag_pos == transform.position) {
 				DropCoin();   
 		    }
 	    }
 
-	    protected void DropCoin() {
+	    private void DropCoin() {
 		    if (Level == 1) {
-			    location_controller.SpawnCoin(settings.base_coin_value, transform.position);
+			    _location_controller.SpawnCoin(_settings.base_coin_value, transform.position);
 		    } else {
-			    location_controller.SpawnCoin(settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
+			    _location_controller.SpawnCoin(_settings.base_coin_value * Mathf.RoundToInt(Mathf.Pow(2, Level - 1)), transform.position);
 		    }
 	    }
 
 	    public void SetLevel(int level) {
 		    
-		    current_level        = level;
+		    _current_level        = level;
 		    transform.localScale = new Vector3(CurrentScale, CurrentScale, CurrentScale);
 
-		    float calcLevel = current_level;
+		    float calc_level = _current_level;
 		    Color color;
 		    
-		    if (calcLevel % 4 == 0) {
+		    if (calc_level % 4 == 0) {
 			    color = Color.white;
-		    } else if (calcLevel % 3 == 0) {
+		    } else if (calc_level % 3 == 0) {
 			    color = Color.HSVToRGB(0.3f, 0.5f,  0.8f);
-		    } else if (calcLevel % 2 == 0) {
+		    } else if (calc_level % 2 == 0) {
 			    color = Color.HSVToRGB(0.5f, 0.5f,  1f);
 		    } else {
 			    color = Color.HSVToRGB(0.8f, 1f,  1f);
@@ -83,7 +82,7 @@ namespace com.rpdev.foundation.view.unit {
 
 	    public void SetDrag(bool is_drag) {
 		    
-		    start_drag_pos = transform.position;
+		    _start_drag_pos = transform.position;
 		    
 		    StopAnimation();
 		    
@@ -103,25 +102,25 @@ namespace com.rpdev.foundation.view.unit {
 		    }
 	    }
 
-	    protected override void CreateAnimationStream(bool is_immidiate_play = true) {
+	    protected override void CreateAnimationStream(bool immediately_play = true) {
 		    
-		    animation_stream?.Dispose();
+		    AnimationDisposable?.Dispose();
 		    
-		    animation_stream = Observable.Timer(TimeSpan.FromSeconds(1f))
-		                                 .Repeat()
-		                                 .Subscribe(_ => {
-			                                  DropCoin();
-			                                  CreateRandomAnimation();
-		                                  });
+			AnimationDisposable = Observable.Timer(TimeSpan.FromSeconds(1f))
+									  .Repeat()
+									  .Subscribe(_ => {
+										  DropCoin();
+										  CreateRandomAnimation();
+									  });
 		    
-		    if(is_immidiate_play)
+		    if(immediately_play)
 				CreateRandomAnimation(false);
 	    }
 
-	    protected void CreateRandomAnimation(bool is_move = true) {
+		private void CreateRandomAnimation(bool is_move = true) {
 		    
 		    DOTween.Kill(transform, false);
-			sequence?.Kill();
+			AnimationSequence?.Kill();
 			
 			transform.DOScale(new Vector3(CurrentScale * 0.9f, CurrentScale * 1.1f, 1), 0.2f).SetEase(Ease.InCirc)
 			         .OnComplete(() => {
@@ -132,30 +131,30 @@ namespace com.rpdev.foundation.view.unit {
 					                             .SetEase(Ease.InCirc);
 				                    });
 			          });
-				
-		    transform.DOJump(is_move ? next_jump_pos : transform.position, 0.3f, 1, 0.3f)
-		             .SetEase(Ease.InCirc)
-		             .OnComplete(() => {
 
-			              next_jump_pos = transform.position +
-			                              new Vector3(Random.Range(-settings.move_speed_range, settings.move_speed_range), Random.Range(-0.2f, 0.2f));
+			transform.DOJump(is_move ? _next_jump_pos : transform.position, 0.3f, 1, 0.3f)
+					 .SetEase(Ease.InCirc)
+					 .OnComplete(() => {
 
-			              if (Bounds.min.x < camera_bounds.min.x) {
-				              next_jump_pos = next_jump_pos.SetX(camera_bounds.min.x + 0.1f);
-			              } else if (Bounds.max.x > camera_bounds.max.x) {
-				              next_jump_pos = next_jump_pos.SetX(camera_bounds.max.x - camera_bounds.max.x - 0.1f);
-			              }
+						 _next_jump_pos = transform.position +
+										  new Vector3(Random.Range(-_settings.move_speed_range, _settings.move_speed_range), Random.Range(-0.2f, 0.2f));
 
-			              if (Bounds.min.y < camera_bounds.min.y) {
-				              next_jump_pos = next_jump_pos.SetY(camera_bounds.min.y + 0.1f);
-			              } else if (Bounds.max.y > camera_bounds.max.y) {
-				              next_jump_pos = next_jump_pos.SetY(camera_bounds.max.y - camera_bounds.max.y - 0.1f);
-			              }
-		              });
-	    }
+						 if (Bounds.min.x < _camera_bounds.min.x) {
+							 _next_jump_pos = _next_jump_pos.SetX(_camera_bounds.min.x + 0.1f);
+						 } else if (Bounds.max.x > _camera_bounds.max.x) {
+							 _next_jump_pos = _next_jump_pos.SetX(_camera_bounds.max.x - _camera_bounds.max.x - 0.1f);
+						 }
+
+						 if (Bounds.min.y < _camera_bounds.min.y) {
+							 _next_jump_pos = _next_jump_pos.SetY(_camera_bounds.min.y + 0.1f);
+						 } else if (Bounds.max.y > _camera_bounds.max.y) {
+							 _next_jump_pos = _next_jump_pos.SetY(_camera_bounds.max.y - _camera_bounds.max.y - 0.1f);
+						 }
+					 });
+		}
 
 	    public override void SetPosition(Vector3 position) {
-		    next_jump_pos = position;
+		    _next_jump_pos = position;
 		    base.SetPosition(position);
 	    }
 

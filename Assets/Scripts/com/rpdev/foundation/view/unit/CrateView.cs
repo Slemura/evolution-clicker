@@ -12,7 +12,7 @@ namespace com.rpdev.foundation.view.unit {
 		
 			CreateRandomAnimation();
 			
-			signal_bus.Fire(new SpawnCreatureFromCrateSignal {
+			SignalBus.Fire(new SpawnCreatureFromCrateSignal {
 				crate_view = this
 			});
 		}

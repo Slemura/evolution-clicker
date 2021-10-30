@@ -1,26 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using com.rpdev.foundation.model;
 using com.rpdev.foundation.view.unit;
-using UnityEngine;
-	
+using com.rpdev.module.common.commands;
+
 namespace com.rpdev.foundation.controller.commands {
 
 	public class SpawnCreatureFromCrateCommand : ICustomCommand<IUnitView> {
-
-		protected readonly LocationController location_controller;
-		protected readonly LocationModel location_model;
+		
+		private readonly LocationController _location_controller;
+		private readonly LocationModel      _location_model;
 		
 		public SpawnCreatureFromCrateCommand(LocationController location_controller,
 		                                     LocationModel location_model) {
 
-			this.location_model = location_model;
-			this.location_controller = location_controller;
+			this._location_model = location_model;
+			this._location_controller = location_controller;
 		}
 		
 		public void Execute(IUnitView crate) {
-			location_controller.SpawnCreature(crate.Position);
-			location_model.RemoveUnit(crate);
+			_location_controller.SpawnCreature(crate.Position);
+			_location_model.RemoveUnit(crate);
 		}
 	}
 }

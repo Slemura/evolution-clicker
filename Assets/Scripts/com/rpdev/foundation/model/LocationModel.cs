@@ -9,60 +9,60 @@ namespace com.rpdev.foundation.model {
 
 	public class LocationModel {
 		
-	    protected readonly List<IUnitView> all_units_on_location = new List<IUnitView>();
-	    protected readonly List<ICreatureView> all_creatures_on_location = new List<ICreatureView>();
-	    protected readonly List<ICoinView> all_coin_on_location = new List<ICoinView>();
-	    protected readonly ReactiveProperty<int> total_units_count = new ReactiveProperty<int>(0);
+		private readonly List<IUnitView>       _all_units_on_location     = new List<IUnitView>();
+		private readonly List<ICreatureView>   _all_creatures_on_location = new List<ICreatureView>();
+		private readonly List<ICoinView>       _all_coin_on_location      = new List<ICoinView>();
+		private readonly ReactiveProperty<int> _total_units_count         = new ReactiveProperty<int>(0);
 	    
-	    public IReactiveProperty<int> TotalUnitCount => total_units_count;
+	    public IReactiveProperty<int> TotalUnitCount => _total_units_count;
 	    
 	    public void AddUnit(IUnitView unit) {
 		    
-		    all_units_on_location.Add(unit);
+		    _all_units_on_location.Add(unit);
 		    
 		    switch (unit) {
 			    case ICreatureView view:
-				    all_creatures_on_location.Add(view);
+				    _all_creatures_on_location.Add(view);
 				    break;
-			    case ICoinView coinView:
-				    all_coin_on_location.Add(coinView);
+			    case ICoinView coin_view:
+				    _all_coin_on_location.Add(coin_view);
 				    break;
 		    }
 
-		    total_units_count.Value = all_units_on_location.Count(un => un is CrateView || un is ICreatureView);
+		    _total_units_count.Value = _all_units_on_location.Count(un => un is CrateView || un is ICreatureView);
 	    }
 
 	    public void RemoveUnit(IUnitView unit) {
 		    
 		    GameObject.Destroy(unit.GameObject);
 		    
-		    if (all_units_on_location.Contains(unit)) {
-			    all_units_on_location.Remove(unit);
+		    if (_all_units_on_location.Contains(unit)) {
+			    _all_units_on_location.Remove(unit);
 		    }
 
 		    switch (unit) {
 			    case ICreatureView view:
-				    if(all_creatures_on_location.Contains(view))
-					    all_creatures_on_location.Remove(view);
+				    if(_all_creatures_on_location.Contains(view))
+					    _all_creatures_on_location.Remove(view);
 				    break;
-			    case ICoinView coinView:
-				    if(all_coin_on_location.Contains(coinView))
-					    all_coin_on_location.Remove(coinView);
+			    case ICoinView coin_view:
+				    if(_all_coin_on_location.Contains(coin_view))
+					    _all_coin_on_location.Remove(coin_view);
 				    break;
 		    }
 		    
-		    total_units_count.Value = all_units_on_location.Count(un => un is CrateView || un is ICreatureView);
+		    _total_units_count.Value = _all_units_on_location.Count(un => un is CrateView || un is ICreatureView);
 	    }
 	    
 	    public ICreatureView GetIntersectInputPositionCreature(ICreatureView creature) {
-		    return all_creatures_on_location.FirstOrDefault(unit => unit != creature &&
+		    return _all_creatures_on_location.FirstOrDefault(unit => unit != creature &&
 		                                                            unit.Bounds.Intersects(creature.Bounds));
 
 	    }
 	    
 	    public ICreatureView GetIntersectInputPositionCreature(Vector3 input_world_position) {
 		    
-		    List<ICreatureView> intersects = all_creatures_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
+		    List<ICreatureView> intersects = _all_creatures_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
 		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
 		                                                                     input_world_position.y >= unit.Bounds.center.y - unit.Bounds.extents.y &&
 		                                                                     input_world_position.y <= unit.Bounds.center.y + unit.Bounds.extents.y)
@@ -75,7 +75,7 @@ namespace com.rpdev.foundation.model {
 	    
 	    public ICoinView[] GetIntersectInputPositionCoin(Vector3 input_world_position) {
 		    
-		    return all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.size.x &&
+		    return _all_coin_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.size.x &&
 		                                              input_world_position.x <= unit.Bounds.center.x + unit.Bounds.size.x &&
 		                                              input_world_position.y >= unit.Bounds.center.y - unit.Bounds.size.y &&
 		                                              input_world_position.y <= unit.Bounds.center.y + unit.Bounds.size.y).ToArray();
@@ -85,7 +85,7 @@ namespace com.rpdev.foundation.model {
 	    
 	    public IUnitView GetIntersectInputPositionUnit(Vector3 input_world_position) {
 		    
-		    List<IUnitView> intersects = all_units_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
+		    List<IUnitView> intersects = _all_units_on_location.Where(unit => input_world_position.x >= unit.Bounds.center.x - unit.Bounds.extents.x &&
 		                                                                     input_world_position.x <= unit.Bounds.center.x + unit.Bounds.extents.x &&
 		                                                                     input_world_position.y >= unit.Bounds.center.y - unit.Bounds.extents.y &&
 		                                                                     input_world_position.y <= unit.Bounds.center.y + unit.Bounds.extents.y).ToList();
