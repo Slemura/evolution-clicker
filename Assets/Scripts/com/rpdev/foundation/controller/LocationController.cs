@@ -2,6 +2,7 @@ using System;
 using com.mikecann.scripts;
 using com.rpdev.foundation.model;
 using com.rpdev.foundation.view.unit;
+using com.rpdev.input;
 using UniRx;
 using UniTools;
 using UnityEngine;
@@ -10,17 +11,17 @@ using Zenject;
 namespace com.rpdev.foundation.controller {
 
 	public class LocationController : IInitializable, IDisposable {
-
-		protected readonly UnitView.Factory unit_factory;
-		protected readonly Settings settings;
-		protected readonly IInputController input_controller;
-		protected readonly LocationModel location_model;
-		protected readonly SignalBus signal_bus;
 		
-		protected Bounds camera_bounds;
-		protected ICreatureView current_drag_creature;
-		protected IDisposable crate_stream;
-		protected CompositeDisposable input_stream;
+		private readonly UnitView.Factory _unit_factory;
+		private readonly Settings         _settings;
+		private readonly IInputController _input_controller;
+		private readonly LocationModel    _location_model;
+		private readonly SignalBus        _signal_bus;
+
+		private Bounds              _camera_bounds;
+		private ICreatureView       _current_drag_creature;
+		private IDisposable         _crate_stream;
+		private CompositeDisposable _input_stream;
 		
 		public LocationController(UnitView.Factory unit_factory,
 								  Settings settings,
@@ -29,138 +30,138 @@ namespace com.rpdev.foundation.controller {
 								  IInputController input_controller) {
 
 
-			this.signal_bus       = signal_bus;
-			this.location_model   = location_model;
-			this.input_controller = input_controller;
-			this.unit_factory     = unit_factory;
-			this.settings         = settings;
-			this.camera_bounds    = Camera.main.OrthographicBounds();
+			this._signal_bus       = signal_bus;
+			this._location_model   = location_model;
+			this._input_controller = input_controller;
+			this._unit_factory     = unit_factory;
+			this._settings         = settings;
+			this._camera_bounds    = Camera.main.OrthographicBounds();
 		}
 
 		public void Initialize() {
+			
 			StartCrateSpawner();
 			
-			input_stream = new CompositeDisposable();
+			_input_stream = new CompositeDisposable();
 			
 			//Input release logic
-			input_controller.IsRelease
-			                .Where(release => release == true)
-			                .Subscribe(_ => {
-				                 if (current_drag_creature == null) {
-					                 
-					                 IUnitView foundUnit = location_model.GetIntersectInputPositionUnit(input_controller.InputWorldPosition.Value);
-					                 foundUnit?.Interact();
-					                 
-				                 } else {
-					                 
-					                 ICreatureView collideCreature = location_model.GetIntersectInputPositionCreature(current_drag_creature);
+			_input_controller.IsRelease
+							 .Where(release => release == true)
+							 .Subscribe(_ => {
+								 if (_current_drag_creature == null) {
 
-					                 if (collideCreature != null) {
-						                 if (collideCreature.Level == current_drag_creature.Level) {
-							                 signal_bus.Fire(new SpawnCreatureFromMergeSignal {
-								                 first_creature  = current_drag_creature,
-								                 second_creature = collideCreature
-							                 });
-						                 }
-					                 } else {
-						                 current_drag_creature.Interact();
-					                 }
-					                 
-					                 current_drag_creature.SetDrag(false);
-					                 current_drag_creature = null;
-				                 }
-			                 })
-			                .AddTo(input_stream);
+									 IUnitView found_unit = _location_model.GetIntersectInputPositionUnit(_input_controller.InputWorldPosition.Value);
+									 found_unit?.Interact();
+
+								 } else {
+
+									 ICreatureView collide_creature = _location_model.GetIntersectInputPositionCreature(_current_drag_creature);
+
+									 if (collide_creature != null) {
+										 if (collide_creature.Level == _current_drag_creature.Level) {
+											 _signal_bus.Fire(new SpawnCreatureFromMergeSignal {
+												 first_creature  = _current_drag_creature,
+												 second_creature = collide_creature
+											 });
+										 }
+									 } else {
+										 _current_drag_creature.Interact();
+									 }
+
+									 _current_drag_creature.SetDrag(false);
+									 _current_drag_creature = null;
+								 }
+							 })
+							 .AddTo(_input_stream);
 
 			//Input press logic
-			input_controller.IsPressed
-			                .Where(press => press)
-			                .Subscribe(_ => {
-				                 
-				                 if (current_drag_creature == null) {
-				                 
-					                 CrateView possibleCrate = location_model.GetIntersectInputPositionUnit(input_controller.InputWorldPosition.Value) as CrateView;
-					                 
-					                 if (possibleCrate == null) {
-						                 
-						                 ICreatureView unit = location_model.GetIntersectInputPositionCreature(input_controller.InputWorldPosition.Value);
-						                 
-						                 if (unit != null) {
-							                 current_drag_creature = unit;
-							                 current_drag_creature.SetDrag(true);
-						                 }    
-					                 }
-				                 }
-			                 })
-			                .AddTo(input_stream);
+			_input_controller.IsPressed
+							 .Where(press => press)
+							 .Subscribe(_ => {
+
+								 if (_current_drag_creature == null) {
+
+									 CrateView possible_crate =
+										 _location_model.GetIntersectInputPositionUnit(_input_controller.InputWorldPosition.Value) as CrateView;
+									 
+									 if (possible_crate == null) {
+
+										 ICreatureView unit = _location_model.GetIntersectInputPositionCreature(_input_controller.InputWorldPosition.Value);
+
+										 if (unit != null) {
+											 _current_drag_creature = unit;
+											 _current_drag_creature?.SetDrag(true);
+										 }
+									 }
+								 }
+							 })
+							 .AddTo(_input_stream);
 
 			//Input move logic
-			input_controller.InputWorldPosition
-			                .Where(pos => input_controller.IsPressed.Value)
-			                .Subscribe(pos => {
-				                 
-				                 if (current_drag_creature == null) {
-					                 ICoinView[] coinView = location_model.GetIntersectInputPositionCoin(pos);
+			_input_controller.InputWorldPosition
+							 .Where(pos => _input_controller.IsPressed.Value)
+							 .Subscribe(pos => {
 
-					                 if (coinView.Length > 0) {
-						                 coinView.ForEach(coin => {
-							                 if (!coin.IsCollected) {
-								                 coin.Interact();
-							                 }
-						                 });
-					                 }
-					                 
-				                 } else {
-					                 current_drag_creature.SetPosition(pos.VectorBoundInBound(current_drag_creature.Bounds, camera_bounds).SetZ(current_drag_creature.Position.z));    
-				                 }
-			                 })
-			                .AddTo(input_stream);
+								 if (_current_drag_creature == null) {
+									 ICoinView[] coin_view = _location_model.GetIntersectInputPositionCoin(pos);
+
+									 if (coin_view.Length > 0) {
+										 coin_view.ForEach(coin => {
+											 if (!coin.IsCollected) {
+												 coin.Interact();
+											 }
+										 });
+									 }
+								 } else {
+									 _current_drag_creature.SetPosition(pos.VectorBoundInBound(_current_drag_creature.Bounds, _camera_bounds).SetZ(_current_drag_creature.Position.z));
+								 }
+							 })
+							 .AddTo(_input_stream);
 			
 			SpawnCrate();
 		}
 
-		protected void StartCrateSpawner() {
+		private void StartCrateSpawner() {
 			
-			crate_stream = Observable.Timer(TimeSpan.FromSeconds(settings.crate_creation_interval))
+			_crate_stream = Observable.Timer(TimeSpan.FromSeconds(_settings.crate_creation_interval))
 			                         .Repeat()
-			                         .Where(_ => location_model.TotalUnitCount.Value < settings.max_creatures)
+			                         .Where(_ => _location_model.TotalUnitCount.Value < _settings.max_creatures)
 			                         .Subscribe(_ => {
 				                         SpawnCrate(); 
 			                          });
 		}
 
-		protected void SpawnCrate() {
-			IUnitView crate  = SpawnUnit(settings.crate_view, new Vector3 (UnityEngine.Random.Range(camera_bounds.min.x + settings.crate_view.Bounds.max.x, camera_bounds.max.x - settings.crate_view.Bounds.max.x),
-			                                                               UnityEngine.Random.Range(camera_bounds.min.y + settings.crate_view.Bounds.max.y, camera_bounds.max.y - settings.crate_view.Bounds.max.y),
-			                                                               0
-			                                                              ));
+		private void SpawnCrate() {
+			SpawnUnit(_settings.crate_view, new Vector3 (UnityEngine.Random.Range(_camera_bounds.min.x + _settings.crate_view.Bounds.max.x, _camera_bounds.max.x - _settings.crate_view.Bounds.max.x),
+			                                                    UnityEngine.Random.Range(_camera_bounds.min.y + _settings.crate_view.Bounds.max.y, _camera_bounds.max.y - _settings.crate_view.Bounds.max.y),
+																0));
 			
 		}
 
 		public void SpawnCoin(int coin_count, Vector3 origin_pos) {
-			ICoinView coin = SpawnUnit(settings.coin_view, origin_pos) as ICoinView;
-			coin.InitCoin(coin_count, origin_pos);
+			ICoinView coin = SpawnUnit(_settings.coin_view, origin_pos) as ICoinView;
+			coin?.InitCoin(coin_count, origin_pos);
 		}
 
 		public ICreatureView SpawnCreature(Vector3 position, int level = 1) {
-			ICreatureView creature = SpawnUnit(settings.creature_view, position) as ICreatureView;
-			creature.SetLevel(level);
+			ICreatureView creature = SpawnUnit(_settings.creature_view, position) as ICreatureView;
+			creature?.SetLevel(level);
 			return creature;
 		}
 
-		public IUnitView SpawnUnit(UnitView view, Vector3 position) {
+		private IUnitView SpawnUnit(UnitView view, Vector3 position) {
 			
-			IUnitView unit = unit_factory.Create(view);
+			IUnitView unit = _unit_factory.Create(view);
 			unit.SetPosition(position);
 			unit.Initialize();
-			location_model.AddUnit(unit);
+			_location_model.AddUnit(unit);
 			
 			return unit;
 		}
 
 		public void Dispose() {
-			crate_stream?.Dispose();
-			input_stream?.Dispose();
+			_crate_stream?.Dispose();
+			_input_stream?.Dispose();
 		}
 		
 		[Serializable]

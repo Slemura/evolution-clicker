@@ -20,68 +20,87 @@ namespace com.rpdev.foundation.view.unit {
 
 	[RequireComponent(typeof(SpriteRenderer))]
 	public class UnitView : CachedMonoBehaviour, IUnitView {
+
+		private SignalBus _signal_bus;
 		
-		[Inject]
-		protected SignalBus signal_bus;
+		private IDisposable    _animation_disposable;
+		private Sequence       _animation_sequence;
 		
-		protected SpriteRenderer sprite_renderer;
-		protected IDisposable animation_stream;
-		protected Sequence sequence;
-		protected Vector3 started_scale;
-		public GameObject GameObject => gameObject;
-		public Bounds Bounds => SpriteRenderer.bounds;
+		private SpriteRenderer _sprite_renderer;
+		private Vector3        _started_scale;
+
+		protected SignalBus   SignalBus           => _signal_bus;
+		
+		protected IDisposable AnimationDisposable {
+			get => _animation_disposable;
+			set => _animation_disposable = value;
+		}
+		
+		protected Sequence AnimationSequence {
+			get => _animation_sequence;
+			set => _animation_sequence = value;
+		}
+
+		public    GameObject  GameObject          => gameObject;
+		public    Bounds      Bounds              => SpriteRenderer.bounds;
+		
 
 		public SpriteRenderer SpriteRenderer {
 			get {
-				if (sprite_renderer == null)
-					sprite_renderer = GetComponent<SpriteRenderer>();
+				if (_sprite_renderer == null)
+					_sprite_renderer = GetComponent<SpriteRenderer>();
 
-				return sprite_renderer;
+				return _sprite_renderer;
 			}
 		}
 
 		public Vector3 Position => transform.position;
 		public Vector2 ScreenPosition => Camera.main.WorldToScreenPoint(transform.position);
 
+		
+		[Inject]
+		private void Construct(SignalBus signal_bus) {
+			_signal_bus = signal_bus;
+		}
+
 		protected void Awake() {
 			SpriteRenderer.sortingOrder = Random.Range(0, 20);
-			started_scale = transform.localScale;
+			_started_scale = transform.localScale;
 		}
 		
-		public virtual void Interact() {
-		}
+		public virtual void Interact() {}
 		
 		public virtual void Initialize() {
 			CreateAnimationStream();
 		}
 
-		protected virtual void CreateAnimationStream(bool is_immidiate_play = true) {
+		protected virtual void CreateAnimationStream(bool immediately_play = true) {
 			
-			animation_stream?.Dispose();
-			animation_stream = Observable.Timer(TimeSpan.FromSeconds(3f))
+			_animation_disposable?.Dispose();
+			_animation_disposable = Observable.Timer(TimeSpan.FromSeconds(3f))
 			                             .Repeat()
 			                             .Subscribe(_ => { CreateRandomAnimation(); });
 
-			if(is_immidiate_play)
+			if(immediately_play)
 				CreateRandomAnimation();
 		}
 
 		protected void StopAnimation() {
-			animation_stream?.Dispose();
+			_animation_disposable?.Dispose();
 			DOTween.Kill(transform, false);
-			sequence?.Kill(false);
+			_animation_sequence?.Kill(false);
 		}
 
 		protected virtual void CreateRandomAnimation() {
 			
 			DOTween.Kill(transform, false);
-			sequence?.Kill(false);
+			_animation_sequence?.Kill(false);
 			
-			sequence = DOTween.Sequence();
+			_animation_sequence = DOTween.Sequence();
 			
-			sequence.Append(transform.DOScale(new Vector3(0.9f, 1.1f, 1), 0.2f).SetEase(Ease.InCirc));
-			sequence.Append(transform.DOScale(new Vector3(1.1f, 0.9f, 1), 0.1f).SetEase(Ease.InCirc));
-			sequence.Append(transform.DOScale(started_scale, 0.1f).SetEase(Ease.InCirc));
+			_animation_sequence.Append(transform.DOScale(new Vector3(0.9f, 1.1f, 1), 0.2f).SetEase(Ease.InCirc));
+			_animation_sequence.Append(transform.DOScale(new Vector3(1.1f, 0.9f, 1), 0.1f).SetEase(Ease.InCirc));
+			_animation_sequence.Append(transform.DOScale(_started_scale, 0.1f).SetEase(Ease.InCirc));
 			
 			transform.DOJump(transform.position, 0.3f, 1, 0.3f).SetEase(Ease.InCirc);
 		}
@@ -91,12 +110,12 @@ namespace com.rpdev.foundation.view.unit {
 		}
 
 		public virtual void Dispose() {
-			animation_stream?.Dispose();
+			_animation_disposable?.Dispose();
 		}
 
 		protected void OnDestroy() {
 			DOTween.Kill(transform, false);
-			sequence?.Kill(false);
+			_animation_sequence?.Kill(false);
 			Dispose();
 		}
 
